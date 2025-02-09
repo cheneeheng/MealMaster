@@ -1,8 +1,9 @@
-import { eachDayOfInterval, format, startOfWeek, endOfWeek } from "date-fns";
+import { eachDayOfInterval, format, startOfWeek, endOfWeek, subDays } from "date-fns";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Meal, MealPlan, InsertMealPlan } from "@shared/schema";
+import { getRecommendedMeals } from "@/lib/mealRecommendations";
 import MealCard from "./MealCard";
 import {
   Dialog,
@@ -13,12 +14,15 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { SparklesIcon } from "lucide-react";
 
 type MealCalendarProps = {
   meals: Meal[];
@@ -62,7 +66,7 @@ export default function MealCalendar({ meals, mealPlans }: MealCalendarProps) {
 
   const getPlansForDay = (date: Date, type: typeof mealTypes[number]) => {
     return mealPlans.filter(
-      plan => 
+      plan =>
         format(new Date(plan.date), "yyyy-MM-dd") === format(date, "yyyy-MM-dd") &&
         plan.type === type
     );
@@ -84,6 +88,24 @@ export default function MealCalendar({ meals, mealPlans }: MealCalendarProps) {
     // Only open the add meal dialog if clicking directly on the slot
     if (target.closest('.meal-card')) return;
     setSelectedSlot({ date, type });
+  };
+
+  // Get recommended meals for the selected slot
+  const getRecommendationsForSlot = () => {
+    if (!selectedSlot) return [];
+
+    // Get recent meal plans for better recommendations
+    const thirtyDaysAgo = subDays(new Date(), 30);
+    const recentPlans = mealPlans.filter(
+      plan => new Date(plan.date) >= thirtyDaysAgo
+    );
+
+    return getRecommendedMeals(
+      meals,
+      recentPlans,
+      selectedSlot.type,
+      3
+    );
   };
 
   return (
@@ -156,25 +178,52 @@ export default function MealCalendar({ meals, mealPlans }: MealCalendarProps) {
                   <SelectValue placeholder="Select a meal" />
                 </SelectTrigger>
                 <SelectContent>
-                  {meals
-                    .filter(meal => meal.types.includes(selectedSlot?.type || ""))
-                    .map(meal => (
-                      <SelectItem key={meal.id} value={meal.id.toString()}>
-                        {meal.name}
-                      </SelectItem>
-                    ))}
+                  {selectedSlot && (
+                    <>
+                      <SelectGroup>
+                        <SelectLabel className="flex items-center gap-2">
+                          <SparklesIcon className="w-4 h-4 text-primary" />
+                          Recommended
+                        </SelectLabel>
+                        {getRecommendationsForSlot().map(meal => (
+                          <SelectItem
+                            key={meal.id}
+                            value={meal.id.toString()}
+                            className="pl-6"
+                          >
+                            {meal.name} ✨
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                      <SelectGroup>
+                        <SelectLabel>All {selectedSlot.type} Meals</SelectLabel>
+                        {meals
+                          .filter(meal => meal.types.includes(selectedSlot.type))
+                          .filter(meal => !getRecommendationsForSlot().some(rec => rec.id === meal.id))
+                          .map(meal => (
+                            <SelectItem
+                              key={meal.id}
+                              value={meal.id.toString()}
+                              className="pl-6"
+                            >
+                              {meal.name}
+                            </SelectItem>
+                          ))}
+                      </SelectGroup>
+                    </>
+                  )}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="flex justify-end gap-4">
-              <Button 
+              <Button
                 variant="outline"
                 onClick={() => setSelectedSlot(null)}
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 onClick={handleCreatePlan}
                 disabled={createMealPlan.isPending || !selectedMealId}
               >
