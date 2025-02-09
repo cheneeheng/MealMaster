@@ -127,7 +127,10 @@ export default function MealCard({ meal, plan }: MealCardProps) {
             <Button 
               variant="outline" 
               className="w-full"
-              onClick={() => setShowEdit(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowEdit(true);
+              }}
             >
               Edit Meal
             </Button>
@@ -143,7 +146,7 @@ export default function MealCard({ meal, plan }: MealCardProps) {
       </Dialog>
 
       <Dialog open={showEdit} onOpenChange={setShowEdit}>
-        <DialogContent>
+        <DialogContent onClick={(e) => e.stopPropagation()}>
           <DialogHeader>
             <DialogTitle>Edit Meal</DialogTitle>
           </DialogHeader>
