@@ -9,7 +9,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogClose,
 } from "@/components/ui/dialog";
 import IngredientList from "./IngredientList";
 import { apiRequest } from "@/lib/queryClient";
@@ -116,18 +115,14 @@ export default function MealCard({ meal, plan }: MealCardProps) {
               onClick={() => toggleConsumed.mutate()}
               disabled={toggleConsumed.isPending}
             >
-              {toggleConsumed.isPending 
-                ? "Updating..." 
-                : plan.consumed 
-                  ? "Mark as Not Consumed" 
+              {toggleConsumed.isPending
+                ? "Updating..."
+                : plan.consumed
+                  ? "Mark as Not Consumed"
                   : "Mark as Consumed"
               }
             </Button>
           </div>
-
-          <DialogClose asChild>
-            <Button variant="outline" className="w-full mt-2">Close</Button>
-          </DialogClose>
         </DialogContent>
       </Dialog>
     </>

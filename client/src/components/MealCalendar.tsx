@@ -143,8 +143,7 @@ export default function MealCalendar({ meals, mealPlans }: MealCalendarProps) {
       <Dialog open={!!selectedSlot} onOpenChange={(open) => !open && setSelectedSlot(null)}>
         <DialogContent onClick={(e) => e.stopPropagation()}>
           <DialogHeader>
-            <DialogTitle>Add Meal to Plan</DialogTitle>
-            <DialogClose />
+            <DialogTitle>Create Meal Plan</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -158,19 +157,19 @@ export default function MealCalendar({ meals, mealPlans }: MealCalendarProps) {
                   <SelectValue placeholder="Select a meal" />
                 </SelectTrigger>
                 <SelectContent>
-                  {meals.map(meal => (
-                    <SelectItem key={meal.id} value={meal.id.toString()}>
-                      {meal.name}
-                    </SelectItem>
-                  ))}
+                  {meals
+                    .filter(meal => meal.types.includes(selectedSlot?.type || ""))
+                    .map(meal => (
+                      <SelectItem key={meal.id} value={meal.id.toString()}>
+                        {meal.name}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="flex justify-end gap-4">
-              <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
-              </DialogClose>
+              <Button variant="outline">Cancel</Button>
               <Button 
                 onClick={handleCreatePlan}
                 disabled={createMealPlan.isPending || !selectedMealId}

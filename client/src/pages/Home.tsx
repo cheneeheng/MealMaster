@@ -43,7 +43,7 @@ export default function Home() {
           <h1 className="text-3xl font-bold text-foreground">Meal Planner</h1>
           <Button onClick={() => setShowMealForm(true)}>
             <Plus className="w-4 h-4 mr-2" />
-            Add Meal
+            Create Meal
           </Button>
         </div>
 

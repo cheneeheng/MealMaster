@@ -5,7 +5,7 @@ import { z } from "zod";
 export const meals = pgTable("meals", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  type: text("type", { enum: ["breakfast", "lunch", "dinner"] }).notNull(),
+  types: text("types").array().notNull(),
   description: text("description"),
   ingredients: jsonb("ingredients").$type<string[]>().notNull(),
   imageUrl: text("image_url")

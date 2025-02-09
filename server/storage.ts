@@ -22,25 +22,25 @@ export class MemStorage implements IStorage {
     this.currentMealId = 1;
     this.currentMealPlanId = 1;
 
-    // Add some sample meals
+    // Add some sample meals with the new types array format
     const sampleMeals: InsertMeal[] = [
       {
         name: "Avocado Toast",
-        type: "breakfast",
+        types: ["breakfast"],
         description: "Whole grain toast with mashed avocado",
         ingredients: ["bread", "avocado", "salt", "pepper"],
         imageUrl: "https://images.unsplash.com/photo-1437750769465-301382cdf094"
       },
       {
         name: "Greek Salad",
-        type: "lunch",
+        types: ["lunch"],
         description: "Fresh Mediterranean salad",
         ingredients: ["lettuce", "tomatoes", "cucumber", "olives", "feta"],
         imageUrl: "https://images.unsplash.com/photo-1477506350614-fcdc29a3b157"
       },
       {
         name: "Grilled Salmon",
-        type: "dinner",
+        types: ["dinner"],
         description: "Herb-crusted salmon with vegetables",
         ingredients: ["salmon", "herbs", "lemon", "olive oil"],
         imageUrl: "https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea"
@@ -82,7 +82,7 @@ export class MemStorage implements IStorage {
   async updateMealPlan(id: number, updates: Partial<MealPlan>): Promise<MealPlan> {
     const existing = this.mealPlans.get(id);
     if (!existing) throw new Error("Meal plan not found");
-    
+
     const updated = { ...existing, ...updates };
     this.mealPlans.set(id, updated);
     return updated;

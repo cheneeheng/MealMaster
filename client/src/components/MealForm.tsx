@@ -13,16 +13,16 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+
+const mealTypes = [
+  { id: "breakfast", label: "Breakfast" },
+  { id: "lunch", label: "Lunch" },
+  { id: "dinner", label: "Dinner" }
+] as const;
 
 type MealFormProps = {
   onSuccess?: () => void;
@@ -34,7 +34,7 @@ export default function MealForm({ onSuccess }: MealFormProps) {
     resolver: zodResolver(insertMealSchema),
     defaultValues: {
       name: "",
-      type: "breakfast",
+      types: [],
       description: "",
       ingredients: [],
       imageUrl: ""
@@ -75,22 +75,40 @@ export default function MealForm({ onSuccess }: MealFormProps) {
 
         <FormField
           control={form.control}
-          name="type"
+          name="types"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Type</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select meal type" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="breakfast">Breakfast</SelectItem>
-                  <SelectItem value="lunch">Lunch</SelectItem>
-                  <SelectItem value="dinner">Dinner</SelectItem>
-                </SelectContent>
-              </Select>
+              <FormLabel>Meal Types</FormLabel>
+              <div className="grid grid-cols-3 gap-4">
+                {mealTypes.map((type) => (
+                  <FormField
+                    key={type.id}
+                    control={form.control}
+                    name="types"
+                    render={({ field }) => (
+                      <FormItem
+                        key={type.id}
+                        className="flex flex-row items-center space-x-3 space-y-0"
+                      >
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value?.includes(type.id)}
+                            onCheckedChange={(checked) => {
+                              const value = field.value || [];
+                              return checked
+                                ? field.onChange([...value, type.id])
+                                : field.onChange(value.filter((val) => val !== type.id));
+                            }}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          {type.label}
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                ))}
+              </div>
               <FormMessage />
             </FormItem>
           )}
