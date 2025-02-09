@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
-import { Check, X } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Meal, MealPlan } from "@shared/schema";
 import {
@@ -13,6 +13,7 @@ import {
 import IngredientList from "./IngredientList";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 
 type MealCardProps = {
   meal: Meal;
@@ -39,34 +40,45 @@ export default function MealCard({ meal, plan }: MealCardProps) {
     }
   });
 
+  const deleteMealPlan = useMutation({
+    mutationFn: async () => {
+      await apiRequest("DELETE", `/api/meal-plans/${plan.id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
+      toast({
+        title: "Success",
+        description: "Meal plan deleted successfully"
+      });
+    }
+  });
+
   return (
     <>
       <div
         className={cn(
-          "p-3 rounded-lg border cursor-pointer transition-colors",
+          "p-3 rounded-lg border cursor-pointer transition-colors group",
           "hover:bg-accent hover:text-accent-foreground",
-          plan.consumed && "bg-muted"
+          plan.consumed && "line-through text-muted-foreground"
         )}
-        onClick={() => setShowDetails(true)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowDetails(true);
+        }}
       >
         <div className="flex items-center justify-between gap-2">
           <span className="font-medium truncate">{meal.name}</span>
           <button
             onClick={e => {
               e.stopPropagation();
-              toggleConsumed.mutate();
+              deleteMealPlan.mutate();
             }}
             className={cn(
-              "w-5 h-5 rounded-full flex items-center justify-center",
-              "hover:bg-primary hover:text-primary-foreground",
-              plan.consumed && "bg-primary text-primary-foreground"
+              "w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity",
+              "hover:bg-destructive hover:text-destructive-foreground"
             )}
           >
-            {plan.consumed ? (
-              <Check className="w-3 h-3" />
-            ) : (
-              <X className="w-3 h-3" />
-            )}
+            <Trash2 className="w-3 h-3" />
           </button>
         </div>
       </div>
@@ -76,7 +88,7 @@ export default function MealCard({ meal, plan }: MealCardProps) {
           <DialogHeader>
             <DialogTitle>{meal.name}</DialogTitle>
           </DialogHeader>
-          
+
           {meal.imageUrl && (
             <div className="relative aspect-video rounded-lg overflow-hidden">
               <img
@@ -92,6 +104,16 @@ export default function MealCard({ meal, plan }: MealCardProps) {
           )}
 
           <IngredientList ingredients={meal.ingredients} />
+
+          <div className="mt-4">
+            <Button
+              variant={plan.consumed ? "outline" : "default"}
+              className="w-full"
+              onClick={() => toggleConsumed.mutate()}
+            >
+              {plan.consumed ? "Mark as Not Consumed" : "Mark as Consumed"}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </>
