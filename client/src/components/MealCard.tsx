@@ -108,7 +108,7 @@ export default function MealCard({ meal, plan }: MealCardProps) {
 
           <IngredientList ingredients={meal.ingredients} />
 
-          <div className="mt-4">
+          <div className="space-y-2">
             <Button
               variant={plan.consumed ? "outline" : "default"}
               className="w-full"
@@ -121,6 +121,13 @@ export default function MealCard({ meal, plan }: MealCardProps) {
                   ? "Mark as Not Consumed"
                   : "Mark as Consumed"
               }
+            </Button>
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => setShowDetails(false)}
+            >
+              Close
             </Button>
           </div>
         </DialogContent>

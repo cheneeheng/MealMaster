@@ -9,7 +9,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogClose,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -143,7 +142,7 @@ export default function MealCalendar({ meals, mealPlans }: MealCalendarProps) {
       <Dialog open={!!selectedSlot} onOpenChange={(open) => !open && setSelectedSlot(null)}>
         <DialogContent onClick={(e) => e.stopPropagation()}>
           <DialogHeader>
-            <DialogTitle>Create Meal Plan</DialogTitle>
+            <DialogTitle>Add Meal to Plan</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -169,7 +168,12 @@ export default function MealCalendar({ meals, mealPlans }: MealCalendarProps) {
             </div>
 
             <div className="flex justify-end gap-4">
-              <Button variant="outline">Cancel</Button>
+              <Button 
+                variant="outline"
+                onClick={() => setSelectedSlot(null)}
+              >
+                Cancel
+              </Button>
               <Button 
                 onClick={handleCreatePlan}
                 disabled={createMealPlan.isPending || !selectedMealId}
