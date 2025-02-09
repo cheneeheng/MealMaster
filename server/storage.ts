@@ -4,6 +4,7 @@ export interface IStorage {
   getMeals(): Promise<Meal[]>;
   getMeal(id: number): Promise<Meal | undefined>;
   createMeal(meal: InsertMeal): Promise<Meal>;
+  updateMeal(id: number, updates: InsertMeal): Promise<Meal>;
   getMealPlans(startDate: Date, endDate: Date): Promise<MealPlan[]>;
   createMealPlan(mealPlan: InsertMealPlan): Promise<MealPlan>;
   updateMealPlan(id: number, updates: Partial<MealPlan>): Promise<MealPlan>;
@@ -63,6 +64,15 @@ export class MemStorage implements IStorage {
     const newMeal = { ...meal, id };
     this.meals.set(id, newMeal);
     return newMeal;
+  }
+
+  async updateMeal(id: number, updates: InsertMeal): Promise<Meal> {
+    const existing = this.meals.get(id);
+    if (!existing) throw new Error("Meal not found");
+
+    const updated = { ...updates, id };
+    this.meals.set(id, updated);
+    return updated;
   }
 
   async getMealPlans(startDate: Date, endDate: Date): Promise<MealPlan[]> {

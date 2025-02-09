@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
-import { Trash2 } from "lucide-react";
+import { Trash2, Edit } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Meal, MealPlan } from "@shared/schema";
 import {
@@ -14,6 +14,7 @@ import IngredientList from "./IngredientList";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import MealForm from "./MealForm";
 
 type MealCardProps = {
   meal: Meal;
@@ -22,6 +23,7 @@ type MealCardProps = {
 
 export default function MealCard({ meal, plan }: MealCardProps) {
   const [showDetails, setShowDetails] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const { toast } = useToast();
 
   const toggleConsumed = useMutation({
@@ -125,11 +127,33 @@ export default function MealCard({ meal, plan }: MealCardProps) {
             <Button 
               variant="outline" 
               className="w-full"
+              onClick={() => setShowEdit(true)}
+            >
+              Edit Meal
+            </Button>
+            <Button 
+              variant="outline" 
+              className="w-full"
               onClick={() => setShowDetails(false)}
             >
               Close
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showEdit} onOpenChange={setShowEdit}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Meal</DialogTitle>
+          </DialogHeader>
+          <MealForm 
+            initialMeal={meal} 
+            onSuccess={() => {
+              setShowEdit(false);
+              setShowDetails(false);
+            }} 
+          />
         </DialogContent>
       </Dialog>
     </>

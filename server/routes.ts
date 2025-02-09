@@ -16,15 +16,34 @@ export function registerRoutes(app: Express) {
     if (!parsed.success) {
       return res.status(400).json({ error: "Invalid meal data" });
     }
-    
+
     const meal = await storage.createMeal(parsed.data);
     res.json(meal);
+  });
+
+  app.patch("/api/meals/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid ID" });
+    }
+
+    const parsed = insertMealSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: "Invalid meal data" });
+    }
+
+    try {
+      const meal = await storage.updateMeal(id, parsed.data);
+      res.json(meal);
+    } catch (err) {
+      res.status(404).json({ error: "Meal not found" });
+    }
   });
 
   app.get("/api/meal-plans", async (req, res) => {
     const startDate = new Date(req.query.startDate as string);
     const endDate = new Date(req.query.endDate as string);
-    
+
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
       return res.status(400).json({ error: "Invalid date range" });
     }

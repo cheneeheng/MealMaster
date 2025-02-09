@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
-import { insertMealSchema, type InsertMeal } from "@shared/schema";
+import { insertMealSchema, type InsertMeal, type Meal } from "@shared/schema";
 import {
   Form,
   FormControl,
@@ -25,14 +25,15 @@ const mealTypes = [
 ] as const;
 
 type MealFormProps = {
+  initialMeal?: Meal;
   onSuccess?: () => void;
 };
 
-export default function MealForm({ onSuccess }: MealFormProps) {
+export default function MealForm({ initialMeal, onSuccess }: MealFormProps) {
   const { toast } = useToast();
   const form = useForm<InsertMeal>({
     resolver: zodResolver(insertMealSchema),
-    defaultValues: {
+    defaultValues: initialMeal || {
       name: "",
       types: [],
       description: "",
@@ -43,14 +44,18 @@ export default function MealForm({ onSuccess }: MealFormProps) {
 
   const createMeal = useMutation({
     mutationFn: async (data: InsertMeal) => {
-      const res = await apiRequest("POST", "/api/meals", data);
+      const res = await apiRequest(
+        initialMeal ? "PATCH" : "POST",
+        initialMeal ? `/api/meals/${initialMeal.id}` : "/api/meals",
+        data
+      );
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
       toast({
         title: "Success",
-        description: "Meal created successfully"
+        description: `Meal ${initialMeal ? "updated" : "created"} successfully`
       });
       onSuccess?.();
     }
@@ -121,7 +126,7 @@ export default function MealForm({ onSuccess }: MealFormProps) {
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea {...field} />
+                <Textarea {...field} value={field.value || ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -154,7 +159,7 @@ export default function MealForm({ onSuccess }: MealFormProps) {
             <FormItem>
               <FormLabel>Image URL</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input {...field} value={field.value || ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -162,7 +167,10 @@ export default function MealForm({ onSuccess }: MealFormProps) {
         />
 
         <Button type="submit" className="w-full" disabled={createMeal.isPending}>
-          {createMeal.isPending ? "Creating..." : "Create Meal"}
+          {createMeal.isPending 
+            ? initialMeal ? "Updating..." : "Creating..." 
+            : initialMeal ? "Update Meal" : "Create Meal"
+          }
         </Button>
       </form>
     </Form>
