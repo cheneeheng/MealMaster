@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -52,6 +53,7 @@ export default function MealCalendar({ meals, mealPlans }: MealCalendarProps) {
         description: "Meal plan created successfully"
       });
       setSelectedSlot(null);
+      setSelectedMealId("");
     }
   });
 
@@ -76,6 +78,13 @@ export default function MealCalendar({ meals, mealPlans }: MealCalendarProps) {
       type: selectedSlot.type,
       consumed: false
     });
+  };
+
+  const handleSlotClick = (e: React.MouseEvent, date: Date, type: typeof mealTypes[number]) => {
+    const target = e.target as HTMLElement;
+    // Only open the add meal dialog if clicking directly on the slot
+    if (target.closest('.meal-card')) return;
+    setSelectedSlot({ date, type });
   };
 
   return (
@@ -112,16 +121,17 @@ export default function MealCalendar({ meals, mealPlans }: MealCalendarProps) {
               <div
                 key={day.toISOString()}
                 className="p-2 min-h-[120px] border-l border-b border-border hover:bg-accent/5 transition-colors cursor-pointer"
-                onClick={() => setSelectedSlot({ date: day, type })}
+                onClick={(e) => handleSlotClick(e, day, type)}
               >
                 {plans.map(plan => {
                   const meal = getMealForPlan(plan);
                   return meal ? (
-                    <MealCard
-                      key={plan.id}
-                      meal={meal}
-                      plan={plan}
-                    />
+                    <div key={plan.id} className="meal-card">
+                      <MealCard
+                        meal={meal}
+                        plan={plan}
+                      />
+                    </div>
                   ) : null;
                 })}
               </div>
@@ -131,9 +141,10 @@ export default function MealCalendar({ meals, mealPlans }: MealCalendarProps) {
       ))}
 
       <Dialog open={!!selectedSlot} onOpenChange={(open) => !open && setSelectedSlot(null)}>
-        <DialogContent>
+        <DialogContent onClick={(e) => e.stopPropagation()}>
           <DialogHeader>
             <DialogTitle>Add Meal to Plan</DialogTitle>
+            <DialogClose />
           </DialogHeader>
 
           <div className="space-y-4">
@@ -156,13 +167,17 @@ export default function MealCalendar({ meals, mealPlans }: MealCalendarProps) {
               </Select>
             </div>
 
-            <Button 
-              className="w-full" 
-              onClick={handleCreatePlan}
-              disabled={createMealPlan.isPending || !selectedMealId}
-            >
-              {createMealPlan.isPending ? "Adding..." : "Add to Plan"}
-            </Button>
+            <div className="flex justify-end gap-4">
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button 
+                onClick={handleCreatePlan}
+                disabled={createMealPlan.isPending || !selectedMealId}
+              >
+                {createMealPlan.isPending ? "Adding..." : "Add to Plan"}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

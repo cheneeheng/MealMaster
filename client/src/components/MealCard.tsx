@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from "@/components/ui/dialog";
 import IngredientList from "./IngredientList";
 import { apiRequest } from "@/lib/queryClient";
@@ -53,6 +54,11 @@ export default function MealCard({ meal, plan }: MealCardProps) {
     }
   });
 
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    deleteMealPlan.mutate();
+  };
+
   return (
     <>
       <div
@@ -69,10 +75,8 @@ export default function MealCard({ meal, plan }: MealCardProps) {
         <div className="flex items-center justify-between gap-2">
           <span className="font-medium truncate">{meal.name}</span>
           <button
-            onClick={e => {
-              e.stopPropagation();
-              deleteMealPlan.mutate();
-            }}
+            onClick={handleDelete}
+            disabled={deleteMealPlan.isPending}
             className={cn(
               "w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity",
               "hover:bg-destructive hover:text-destructive-foreground"
@@ -84,7 +88,7 @@ export default function MealCard({ meal, plan }: MealCardProps) {
       </div>
 
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
-        <DialogContent>
+        <DialogContent onClick={(e) => e.stopPropagation()}>
           <DialogHeader>
             <DialogTitle>{meal.name}</DialogTitle>
           </DialogHeader>
@@ -110,10 +114,20 @@ export default function MealCard({ meal, plan }: MealCardProps) {
               variant={plan.consumed ? "outline" : "default"}
               className="w-full"
               onClick={() => toggleConsumed.mutate()}
+              disabled={toggleConsumed.isPending}
             >
-              {plan.consumed ? "Mark as Not Consumed" : "Mark as Consumed"}
+              {toggleConsumed.isPending 
+                ? "Updating..." 
+                : plan.consumed 
+                  ? "Mark as Not Consumed" 
+                  : "Mark as Consumed"
+              }
             </Button>
           </div>
+
+          <DialogClose asChild>
+            <Button variant="outline" className="w-full mt-2">Close</Button>
+          </DialogClose>
         </DialogContent>
       </Dialog>
     </>
